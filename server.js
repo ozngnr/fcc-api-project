@@ -1,6 +1,3 @@
-// server.js
-// where your node app starts
-
 // init project
 var express = require('express');
 var app = express();
@@ -18,9 +15,22 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-// your first API endpoint...
-app.get('/api/hello', function (req, res) {
-  res.json({ greeting: 'hello API' });
+app.get('/timestamp', function (req, res) {
+  res.sendFile(__dirname + '/views/timestamp.html');
+});
+
+app.get('/headerparser', function (req, res) {
+  res.sendFile(__dirname + '/views/headerparser.html');
+});
+
+// API end points
+app.get('/api/whoami', (req, res) => {
+  console.log(req.headers);
+  res.json({
+    ip: req.ip,
+    language: req.headers['accept-language'],
+    software: req.headers['user-agent'],
+  });
 });
 
 app.get('/api/:date?', (req, res) => {
