@@ -23,28 +23,27 @@ app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-app.get('/api', function (req, res) {
-  const now = new Date();
-  res.json({
-    unix: now.getTime(),
-    utc: now.toUTCString(),
-  });
-});
+app.get('/api/:date?', (req, res) => {
+  let date;
+  // set response to error by default
+  let response = { error: 'Invalid Date' };
+  let passedInValue = req.params.date;
 
-app.get('/api/:date', (req, res) => {
-  const isDateString = req.params.date.includes('-');
-  const passedInValue = isDateString
-    ? req.params.date
-    : parseInt(req.params.date);
-  const date = new Date(passedInValue);
-  const unix = date.getTime();
-  const utc = date.toUTCString();
-
-  if (isNaN(unix)) {
-    res.json({ error: 'Invalid Date' });
+  if (passedInValue) {
+    if (isNaN(+passedInValue)) {
+      date = new Date(passedInValue);
+    } else {
+      date = new Date(+passedInValue);
+    }
   } else {
-    res.json({ unix, utc });
+    date = new Date();
   }
+  if (!isNaN(date)) {
+    const unix = date.getTime();
+    const utc = date.toUTCString();
+    response = { unix, utc };
+  }
+  return res.json(response);
 });
 
 // listen for requests :)
