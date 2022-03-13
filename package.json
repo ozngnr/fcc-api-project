@@ -7,15 +7,16 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.15.2",
+    "cors": "^2.8.0",
     "ejs": "^3.1.5",
-    "cors": "^2.8.0"
+    "express": "^4.15.2"
   },
   "engines": {
     "node": "14.x"
   },
   "devDependencies": {
     "got": "^11.3.0",
+    "nodemon": "^2.0.15",
     "tape": "^4.7.0"
   },
   "repository": {
