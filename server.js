@@ -50,10 +50,10 @@ app.get('/urlshortener', function (req, res) {
 // URL SHORTENER
 app.post('/api/shorturl', async (req, res) => {
   const longUrl = req.body.url;
-
+  console.log(req.body);
   let result = { error: 'invalid url' };
   // check if its a valid url
-  if (validUrl.isHttpUri(longUrl)) {
+  if (validUrl.isWebUri(longUrl)) {
     // check if url already stored in mongo
     const url = await URL.findOne({ longUrl }).exec();
     //if so update result
