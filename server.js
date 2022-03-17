@@ -53,7 +53,7 @@ app.post('/api/shorturl', async (req, res) => {
 
   let result = { error: 'invalid url' };
   // check if its a valid url
-  if (validUrl.isUri(longUrl)) {
+  if (validUrl.isHttpUri(longUrl)) {
     // check if url already stored in mongo
     const url = await URL.findOne({ longUrl }).exec();
     //if so update result
