@@ -1,16 +1,34 @@
-// init project
-var express = require('express');
-var app = express();
-var port = process.env.PORT || 3000;
-// enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
-// so that your API is remotely testable by FCC
-var cors = require('cors');
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const shortid = require('shortid');
+const validUrl = require('valid-url');
+const app = express();
+
+const port = process.env.PORT || 3000;
+
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const { Schema } = mongoose;
+// url schema to create url objects for mongo database
+const urlSchema = new Schema({
+  shortUrl: String,
+  longUrl: String,
+});
+
+// Create a URL Constructor
+const URL = mongoose.model('URL', urlSchema);
+
 app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 204
-
-// http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: false }));
 
-// http://expressjs.com/en/starter/basic-routing.html
+// routing
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
@@ -23,7 +41,58 @@ app.get('/headerparser', function (req, res) {
   res.sendFile(__dirname + '/views/headerparser.html');
 });
 
+app.get('/urlshortener', function (req, res) {
+  res.sendFile(__dirname + '/views/urlshortener.html');
+});
+
 // API end points
+
+// URL SHORTENER
+app.post('/api/shorturl', async (req, res) => {
+  const longUrl = req.body.url;
+
+  let result = { error: 'invalid url' };
+  // check if its a valid url
+  if (validUrl.isUri(longUrl)) {
+    // check if url already stored in mongo
+    const url = await URL.findOne({ longUrl }).exec();
+    //if so update result
+    if (url) {
+      result = {
+        original_url: url.longUrl,
+        short_url: url.shortUrl,
+      };
+    } else {
+      // if url isn't in the database, create one
+      const shortUrl = shortid.generate();
+      URL.create(
+        {
+          shortUrl,
+          longUrl,
+        },
+        (err, url) => {
+          if (err) console.error(err);
+          result = {
+            original_url: url.longUrl,
+            short_url: url.shortUrl,
+          };
+        }
+      );
+    }
+  }
+
+  res.json(result);
+});
+
+app.get('/api/shorturl/:shortUrl', async (req, res) => {
+  const urlParam = req.params.shortUrl;
+  // find short url in the database
+  await URL.findOne({ shortUrl: urlParam }, (err, url) => {
+    if (err) console.error(err);
+    res.redirect(url.longUrl);
+  });
+});
+// REQUEST HEADER PARSER
 app.get('/api/whoami', (req, res) => {
   res.json({
     ipaddress: req.ip,
@@ -32,7 +101,16 @@ app.get('/api/whoami', (req, res) => {
   });
 });
 
-app.get('/api/:date?', (req, res) => {
+//TIMESTAMP MICROSERVICE
+app.get('/api', (req, res) => {
+  let date = new Date();
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString(),
+  });
+});
+
+app.get('/api/:date', (req, res) => {
   let date;
   // set response to error by default
   let response = { error: 'Invalid Date' };
@@ -44,9 +122,8 @@ app.get('/api/:date?', (req, res) => {
     } else {
       date = new Date(+passedInValue);
     }
-  } else {
-    date = new Date();
   }
+
   if (!isNaN(date)) {
     const unix = date.getTime();
     const utc = date.toUTCString();
