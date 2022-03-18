@@ -17,8 +17,8 @@ mongoose.connect(process.env.MONGO_URI, {
 const { Schema } = mongoose;
 // url schema to create url objects for mongo database
 const urlSchema = new Schema({
-  shortUrl: String,
-  longUrl: String,
+  original_url: String,
+  short_url: String,
 });
 
 // Create a URL Constructor
@@ -48,40 +48,28 @@ app.get('/urlshortener', function (req, res) {
 // API end points
 
 // URL SHORTENER
-app.post('/api/shorturl', async (req, res) => {
-  const longUrl = req.body.url;
-  console.log(req.body);
-  let result = { error: 'invalid url' };
-  // check if its a valid url
-  if (validUrl.isWebUri(longUrl)) {
-    // check if url already stored in mongo
-    const url = await URL.findOne({ longUrl }).exec();
-    //if so update result
-    if (url) {
-      result = {
-        original_url: url.longUrl,
-        short_url: url.shortUrl,
-      };
-    } else {
-      // if url isn't in the database, create one
-      const shortUrl = shortid.generate();
+app.post('/api/shorturl', (req, res) => {
+  try {
+    const requestedUrl = req.body.url;
+    const shortUrl = shortid.generate();
+
+    if (validUrl.isWebUri(requestedUrl)) {
       URL.create(
-        {
-          shortUrl,
-          longUrl,
-        },
-        (err, url) => {
+        { original_url: requestedUrl, short_url: shortUrl },
+        (err, data) => {
           if (err) console.error(err);
-          result = {
-            original_url: url.longUrl,
-            short_url: url.shortUrl,
-          };
+          res.json({
+            original_url: data.original_url,
+            short_url: data.short_url,
+          });
         }
       );
+    } else {
+      res.json({ error: 'invalid url' });
     }
+  } catch (error) {
+    res.status(500).send('server error');
   }
-
-  res.json(result);
 });
 
 app.get('/api/shorturl/:shortUrl', async (req, res) => {
