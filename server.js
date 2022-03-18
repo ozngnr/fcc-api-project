@@ -73,12 +73,16 @@ app.post('/api/shorturl', (req, res) => {
 });
 
 app.get('/api/shorturl/:shortUrl', async (req, res) => {
-  const urlParam = req.params.shortUrl;
-  // find short url in the database
-  await URL.findOne({ shortUrl: urlParam }, (err, url) => {
-    if (err) console.error(err);
-    res.redirect(url.longUrl);
-  });
+  try {
+    const shortUrl = req.params.shortUrl;
+    // find short url in the database
+    await URL.findOne({ short_url: shortUrl }, (err, url) => {
+      if (err) console.error(err);
+      res.redirect(url.original_url);
+    });
+  } catch (error) {
+    res.status(500).send('server error');
+  }
 });
 // REQUEST HEADER PARSER
 app.get('/api/whoami', (req, res) => {
