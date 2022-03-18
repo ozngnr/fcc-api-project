@@ -72,11 +72,11 @@ app.post('/api/shorturl', (req, res) => {
   }
 });
 
-app.get('/api/shorturl/:shortUrl', async (req, res) => {
+app.get('/api/shorturl/:shortUrl', (req, res) => {
   try {
     const shortUrl = req.params.shortUrl;
     // find short url in the database
-    await URL.findOne({ short_url: shortUrl }, (err, url) => {
+    URL.findOne({ short_url: shortUrl }, (err, url) => {
       if (err) console.error(err);
       res.redirect(url.original_url);
     });
