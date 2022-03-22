@@ -10,7 +10,7 @@ const exerciseSchema = new Schema({
 
 const userSchema = new Schema({
   username: { type: String, required: [true, 'Username is required!'] },
-  count: Number,
+  count: { type: Number, default: 0 },
   log: [exerciseSchema],
 });
 

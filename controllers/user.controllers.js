@@ -69,8 +69,17 @@ const addExercise = (req, res) => {
   }
 };
 
+const getLogs = (req, res) => {
+  User.findById(req.params._id, (err, user) => {
+    if (err) res.send(err.message);
+    user.count = user.log.length;
+    res.json(user);
+  }).select('-log._id');
+};
+
 module.exports = {
   createUser,
   getUsers,
   addExercise,
+  getLogs,
 };

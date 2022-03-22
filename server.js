@@ -49,6 +49,7 @@ app.get('/exercisetracker', function (req, res) {
 //EXERCISE TRACKER
 const userControllers = require('./controllers/user.controllers');
 app.get('/api/users', userControllers.getUsers);
+app.get('/api/users/:_id/logs', userControllers.getLogs);
 app.post('/api/users', userControllers.createUser);
 app.post('/api/users/:_id/exercises', userControllers.addExercise);
 // URL SHORTENER
