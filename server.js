@@ -14,15 +14,9 @@ mongoose.connect(process.env.MONGO_URI, {
   useUnifiedTopology: true,
 });
 
-const { Schema } = mongoose;
-// url schema to create url objects for mongo database
-const urlSchema = new Schema({
-  original_url: String,
-  short_url: String,
-});
-
-// Create a URL Constructor
-const URL = mongoose.model('URL', urlSchema);
+// models
+const URL = require('./models/url');
+const User = require('./models/user');
 
 app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 204
 app.use(express.static('public'));
@@ -44,9 +38,19 @@ app.get('/headerparser', function (req, res) {
 app.get('/urlshortener', function (req, res) {
   res.sendFile(__dirname + '/views/urlshortener.html');
 });
+app.get('/exercisetracker', function (req, res) {
+  res.sendFile(__dirname + '/views/exercise.html');
+});
 
 // API end points
 
+// FILE METADATA MICROSERVICE
+
+//EXERCISE TRACKER
+const userControllers = require('./controllers/user.controllers');
+app.get('/api/users', userControllers.getUsers);
+app.post('/api/users', userControllers.createUser);
+app.post('/api/users/:_id/exercises', userControllers.addExercise);
 // URL SHORTENER
 app.post('/api/shorturl', (req, res) => {
   try {
@@ -84,6 +88,7 @@ app.get('/api/shorturl/:shortUrl', (req, res) => {
     res.status(500).send('server error');
   }
 });
+
 // REQUEST HEADER PARSER
 app.get('/api/whoami', (req, res) => {
   res.json({
@@ -94,15 +99,7 @@ app.get('/api/whoami', (req, res) => {
 });
 
 //TIMESTAMP MICROSERVICE
-app.get('/api', (req, res) => {
-  let date = new Date();
-  res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString(),
-  });
-});
-
-app.get('/api/:date', (req, res) => {
+app.get('/api/:date?', (req, res) => {
   let date;
   // set response to error by default
   let response = { error: 'Invalid Date' };
@@ -114,6 +111,8 @@ app.get('/api/:date', (req, res) => {
     } else {
       date = new Date(+passedInValue);
     }
+  } else {
+    date = new Date();
   }
 
   if (!isNaN(date)) {
