@@ -3,8 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const shortid = require('shortid');
-const validUrl = require('valid-url');
 const app = express();
 
 const port = process.env.PORT || 3000;
@@ -13,10 +11,6 @@ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-// models
-const URL = require('./models/url');
-const User = require('./models/user');
 
 app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 204
 app.use(express.static('public'));
@@ -52,43 +46,12 @@ app.get('/api/users', userControllers.getUsers);
 app.get('/api/users/:_id/logs', userControllers.getLogs);
 app.post('/api/users', userControllers.createUser);
 app.post('/api/users/:_id/exercises', userControllers.addExercise);
+
 // URL SHORTENER
-app.post('/api/shorturl', (req, res) => {
-  try {
-    const requestedUrl = req.body.url;
-    const shortUrl = shortid.generate();
+const urlControllers = require('./controllers/url.controllers');
 
-    if (validUrl.isWebUri(requestedUrl)) {
-      URL.create(
-        { original_url: requestedUrl, short_url: shortUrl },
-        (err, data) => {
-          if (err) console.error(err);
-          res.json({
-            original_url: data.original_url,
-            short_url: data.short_url,
-          });
-        }
-      );
-    } else {
-      res.json({ error: 'invalid url' });
-    }
-  } catch (error) {
-    res.status(500).send('server error');
-  }
-});
-
-app.get('/api/shorturl/:shortUrl', (req, res) => {
-  try {
-    const shortUrl = req.params.shortUrl;
-    // find short url in the database
-    URL.findOne({ short_url: shortUrl }, (err, url) => {
-      if (err) console.error(err);
-      res.redirect(url.original_url);
-    });
-  } catch (error) {
-    res.status(500).send('server error');
-  }
-});
+app.post('/api/shorturl', urlControllers.createShortUrl);
+app.get('/api/shorturl/:shortUrl', urlControllers.redirectToUrl);
 
 // REQUEST HEADER PARSER
 app.get('/api/whoami', (req, res) => {

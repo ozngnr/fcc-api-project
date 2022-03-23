@@ -42,6 +42,7 @@ const addExercise = (req, res) => {
     } else {
       newExercise.date = new Date().toDateString();
     }
+
     // Check if the entry is valid
     const err = newExercise.validateSync();
 
@@ -72,6 +73,32 @@ const addExercise = (req, res) => {
 const getLogs = (req, res) => {
   User.findById(req.params._id, (err, user) => {
     if (err) res.send(err.message);
+
+    if (req.query.from || req.query.to) {
+      let fromDate = new Date(0); // Set default from date to 1970
+      let toDate = new Date(); // Set default toDate to now
+
+      if (req.query.from) {
+        fromDate = new Date(req.query.from);
+      }
+      if (req.query.to) {
+        toDate = new Date(req.query.to);
+      }
+
+      fromDate = fromDate.getTime();
+      toDate = toDate.getTime();
+
+      user.log = user.log.filter((exercise) => {
+        const exerciseDate = new Date(exercise.date).getTime();
+
+        return exerciseDate >= fromDate && exerciseDate <= toDate;
+      });
+    }
+
+    if (req.query.limit) {
+      user.log = user.log.slice(0, req.query.limit);
+    }
+
     user.count = user.log.length;
     res.json(user);
   }).select('-log._id');

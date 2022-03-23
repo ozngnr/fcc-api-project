@@ -82,3 +82,17 @@ code {
   background-color: #fffec4;
   padding: 2px;
 }
+
+.user-stories {
+  max-width: 700px;
+  text-align: left;
+  font-size: 1.125rem;
+}
+
+.user-stories li {
+  padding: 0.5em 1em;
+}
+
+.user-stories li:nth-of-type(odd) {
+  background-color: #eeeeee;
+}
