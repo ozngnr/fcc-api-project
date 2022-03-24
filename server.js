@@ -48,7 +48,7 @@ const upload = multer();
 const fileControllers = require('./controllers/filedata.contollers');
 
 app.post(
-  '/api/fileanalyse',
+  '/upload/api/fileanalyse',
   upload.single('upfile'),
   fileControllers.uploadFile
 );
