@@ -44,16 +44,7 @@ app.get('/upload', function (req, res) {
 // API end points
 // FILE METADATA MICROSERVICE
 
-// Set storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+const upload = multer();
 const fileControllers = require('./controllers/filedata.contollers');
 
 app.post(
