@@ -46,7 +46,7 @@ a {
 form {
   margin-bottom: 25px;
   padding: 15px;
-  background-color: #87d37c;
+  background-color: #dddddd;
   display: inline-block;
   width: 100%;
   max-width: 340px;
@@ -95,4 +95,14 @@ code {
 
 .user-stories li:nth-of-type(odd) {
   background-color: #eeeeee;
+}
+
+.view {
+  position: relative;
+  margin: auto;
+  margin-top: 40px;
+  border: 1px solid #aaa;
+  padding: 20px;
+  width: 60%;
+  min-width: 400px;
 }

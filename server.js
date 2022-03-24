@@ -1,9 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 const app = express();
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const multer = require('multer');
+
+const upload = multer({ dest: 'uploads/' });
 
 const port = process.env.PORT || 3000;
 
@@ -35,10 +38,22 @@ app.get('/urlshortener', function (req, res) {
 app.get('/exercisetracker', function (req, res) {
   res.sendFile(__dirname + '/views/exercise.html');
 });
+app.get('/upload', function (req, res) {
+  res.sendFile(__dirname + '/views/upload.html');
+});
 
 // API end points
 
 // FILE METADATA MICROSERVICE
+app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
+  const file = req.file;
+  if (!file) return res.send('Please select a file to upload.');
+  res.json({
+    name: file.originalname,
+    type: file.mimetype,
+    size: file.size,
+  });
+});
 
 //EXERCISE TRACKER
 const userControllers = require('./controllers/user.controllers');
