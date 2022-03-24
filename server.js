@@ -5,8 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const multer = require('multer');
-
-const upload = multer({ dest: 'uploads/' });
+const fs = require('fs');
 
 const port = process.env.PORT || 3000;
 
@@ -43,17 +42,25 @@ app.get('/upload', function (req, res) {
 });
 
 // API end points
-
 // FILE METADATA MICROSERVICE
-app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
-  const file = req.file;
-  if (!file) return res.send('Please select a file to upload.');
-  res.json({
-    name: file.originalname,
-    type: file.mimetype,
-    size: file.size,
-  });
+
+// Set storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
+const upload = multer({ storage: storage });
+const fileControllers = require('./controllers/filedata.contollers');
+
+app.post(
+  '/api/fileanalyse',
+  upload.single('upfile'),
+  fileControllers.uploadFile
+);
 
 //EXERCISE TRACKER
 const userControllers = require('./controllers/user.controllers');
